@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>我们结婚啦</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Serif SC', serif;
+    background: #fdf6f0;
+    color: #5a3e36;
+    overflow-x: hidden;
+  }
+
+  /* 花瓣飘落动画 */
+  .petals-container {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 999;
+    overflow: hidden;
+  }
+  .petal {
+    position: absolute;
+    top: -40px;
+    width: 20px;
+    height: 20px;
+    background: radial-gradient(ellipse at center, #f8b4c8 0%, #f48fb1 60%, #ec407a 100%);
+    border-radius: 50% 0 50% 50%;
+    opacity: 0.7;
+    animation: fall linear infinite;
+  }
+  @keyframes fall {
+    0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 0.8; }
+    50% { opacity: 0.6; }
+    100% { transform: translateY(110vh) rotate(720deg) scale(0.3); opacity: 0; }
+  }
+
+  /* 页面容器 */
+  .page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    position: relative;
+  }
+
+  /* 封面页 */
+  .cover-page {
+    background: linear-gradient(180deg, #fff5f5 0%, #fce4ec 30%, #f8bbd0 70%, #f48fb1 100%);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover-page::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.5;
+  }
+  .cover-content { position: relative; z-index: 2; }
+  .cover-icon { font-size: 60px; margin-bottom: 20px; animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+  }
+  .cover-title {
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: 52px;
+    color: #c62828;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 10px;
+    animation: fadeInDown 1.2s ease;
+  }
+  .cover-subtitle {
+    font-size: 18px;
+    color: #ad1457;
+    letter-spacing: 8px;
+    margin-bottom: 30px;
+    animation: fadeInUp 1.2s ease 0.3s both;
+  }
+  .cover-names {
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: 38px;
+    color: #b71c1c;
+    margin: 20px 0;
+    animation: fadeIn 1.5s ease 0.6s both;
+  }
+  .cover-names .amp {
+    display: inline-block;
+    font-size: 28px;
+    color: #e91e63;
+    margin: 0 15px;
+    vertical-align: middle;
+    animation: heartBeat 1.5s ease infinite;
+  }
+  @keyframes heartBeat {
+    0%, 100% { transform: scale(1); }
+    25% { transform: scale(1.2); }
+    50% { transform: scale(1); }
+    75% { transform: scale(1.15); }
+  }
+  .cover-date {
+    font-size: 16px;
+    color: #880e4f;
+    letter-spacing: 3px;
+    margin-top: 15px;
+    padding: 10px 30px;
+    border: 1px solid rgba(136,14,79,0.3);
+    border-radius: 30px;
+    animation: fadeIn 1.5s ease 0.9s both;
+  }
+  .scroll-hint {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #ad1457;
+    font-size: 13px;
+    animation: bounce 2s ease infinite;
+    z-index: 2;
+  }
+  .scroll-hint::after {
+    content: '▼';
+    display: block;
+    text-align: center;
+    margin-top: 5px;
+    font-size: 10px;
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(10px); }
+  }
+
+  /* 通用动画 */
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes fadeInDown { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* 邀请页 */
+  .invite-page {
+    background: linear-gradient(180deg, #fff8f0 0%, #fff 50%, #fff5f5 100%);
+  }
+  .invite-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 40px 30px;
+    max-width: 380px;
+    width: 100%;
+    box-shadow: 0 10px 40px rgba(183,28,28,0.08);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .invite-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #e91e63, #f48fb1, #e91e63);
+  }
+  .invite-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #e91e63, #f48fb1, #e91e63);
+  }
+  .invite-ornament {
+    font-size: 36px;
+    margin-bottom: 15px;
+  }
+  .invite-heading {
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: 32px;
+    color: #c62828;
+    margin-bottom: 20px;
+  }
+  .invite-text {
+    font-size: 15px;
+    line-height: 2;
+    color: #5a3e36;
+    margin-bottom: 25px;
+  }
+  .divider {
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #e91e63, transparent);
+    margin: 20px auto;
+  }
+
+  /* 信息页 */
+  .info-page {
+    background: linear-gradient(180deg, #fff5f5 0%, #fce4ec 100%);
+  }
+  .info-section {
+    max-width: 380px;
+    width: 100%;
+  }
+  .info-block {
+    background: #fff;
+    border-radius: 16px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    text-align: center;
+  }
+  .info-block-icon { font-size: 32px; margin-bottom: 10px; }
+  .info-block-title {
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: 22px;
+    color: #c62828;
+    margin-bottom: 12px;
+  }
+  .info-block-content {
+    font-size: 15px;
+    line-height: 1.8;
+    color: #5a3e36;
+  }
+  .info-block-content .highlight {
+    color: #c62828;
+    font-weight: 700;
+    font-size: 17px;
+  }
+
+  /* 倒计时 */
+  .countdown-section {
+    background: linear-gradient(135deg, #c62828, #ad1457);
+    border-radius: 16px;
+    padding: 30px 20px;
+    margin-bottom: 20px;
+    color: #fff;
+    text-align: center;
+    box-shadow: 0 8px 30px rgba(198,40,40,0.3);
+  }
+  .countdown-title {
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  .countdown-grid {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+  }
+  .countdown-item {
+    background: rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 12px 8px;
+    min-width: 65px;
+    backdrop-filter: blur(10px);
+  }
+  .countdown-num {
+    font-size: 32px;
+    font-weight: 700;
+    display: block;
+    line-height: 1.2;
+  }
+  .countdown-label {
+    font-size: 12px;
+    opacity: 0.8;
+    margin-top: 4px;
+  }
+
+  /* 地图提示 */
+  .map-hint {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+    max-width: 380px;
+    width: 100%;
+  }
+  .map-hint-icon { font-size: 28px; margin-bottom: 8px; }
+  .map-hint-text { font-size: 14px; color: #5a3e36; line-height: 1.6; }
+
+  /* 尾页 */
+  .end-page {
+    background: linear-gradient(180deg, #fce4ec 0%, #f8bbd0 50%, #f48fb1 100%);
+    text-align: center;
+  }
+  .end-heart {
+    font-size: 80px;
+    animation: pulse 2s ease-in-out infinite;
+    margin-bottom: 20px;
+  }
+  .end-text {
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: 36px;
+    color: #b71c1c;
+    margin-bottom: 10px;
+  }
+  .end-sub {
+    font-size: 14px;
+    color: #880e4f;
+    letter-spacing: 5px;
+  }
+
+  /* 音乐按钮 */
+  .music-btn {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    z-index: 1000;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.9);
+    border: 2px solid #e91e63;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    cursor: pointer;
+    animation: spin 3s linear infinite;
+    box-shadow: 0 2px 10px rgba(233,30,99,0.3);
+  }
+  .music-btn.paused { animation-play-state: paused; }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+  /* 滚动动画 */
+  .animate-on-scroll {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s ease;
+  }
+  .animate-on-scroll.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<!-- 花瓣 -->
+<div class="petals-container" id="petals"></div>
+
+<!-- 音乐按钮 -->
+<div class="music-btn paused" id="musicBtn" onclick="toggleMusic()">🎵</div>
+
+<!-- 封面页 -->
+<div class="page cover-page">
+  <div class="cover-content">
+    <div class="cover-icon">💍</div>
+    <div class="cover-title">我们结婚啦</div>
+    <div class="cover-subtitle">W E  A R E  M A R R I E D</div>
+    <div class="cover-names">
+      张明 <span class="amp">&</span> 李雪
+    </div>
+    <div class="cover-date">2026年10月1日 · 星期四</div>
+  </div>
+  <div class="scroll-hint">向下滑动查看详情</div>
+</div>
+
+<!-- 邀请页 -->
+<div class="page invite-page">
+  <div class="invite-card animate-on-scroll">
+    <div class="invite-ornament">🌸</div>
+    <div class="invite-heading">诚挚邀请</div>
+    <div class="divider"></div>
+    <div class="invite-text">
+      佳期已定，良缘天成<br>
+      谨定于<br>
+      <strong style="color:#c62828; font-size:18px;">2026年10月1日（星期四）</strong><br>
+      举行结婚典礼<br>
+      届时恭请您的光临<br>
+      与我们共同见证这幸福的时刻
+    </div>
+    <div class="divider"></div>
+    <div style="font-size:14px; color:#ad1457; margin-top:10px;">
+      张明 & 李雪 敬邀
+    </div>
+  </div>
+</div>
+
+<!-- 信息页 -->
+<div class="page info-page">
+  <div class="info-section">
+
+    <!-- 倒计时 -->
+    <div class="countdown-section animate-on-scroll">
+      <div class="countdown-title">💕 距离婚礼还有</div>
+      <div class="countdown-grid">
+        <div class="countdown-item">
+          <span class="countdown-num" id="days">00</span>
+          <div class="countdown-label">天</div>
+        </div>
+        <div class="countdown-item">
+          <span class="countdown-num" id="hours">00</span>
+          <div class="countdown-label">时</div>
+        </div>
+        <div class="countdown-item">
+          <span class="countdown-num" id="minutes">00</span>
+          <div class="countdown-label">分</div>
+        </div>
+        <div class="countdown-item">
+          <span class="countdown-num" id="seconds">00</span>
+          <div class="countdown-label">秒</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 时间 -->
+    <div class="info-block animate-on-scroll">
+      <div class="info-block-icon">📅</div>
+      <div class="info-block-title">良辰吉日</div>
+      <div class="info-block-content">
+        <div class="highlight">2026年10月1日（星期四）</div>
+        <div>上午 11:18 典礼开始</div>
+      </div>
+    </div>
+
+    <!-- 地点 -->
+    <div class="info-block animate-on-scroll">
+      <div class="info-block-icon">📍</div>
+      <div class="info-block-title">宴会地点</div>
+      <div class="info-block-content">
+        <div class="highlight">花果园大酒店</div>
+        <div>三楼宴会厅</div>
+        <div style="margin-top:8px; font-size:13px; color:#888;">
+          贵州省贵阳市南明区花果园大街88号
+        </div>
+      </div>
+    </div>
+
+    <!-- 流程 -->
+    <div class="info-block animate-on-scroll">
+      <div class="info-block-icon">📋</div>
+      <div class="info-block-title">婚礼流程</div>
+      <div class="info-block-content" style="text-align:left; padding: 0 10px;">
+        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px dashed #f8bbd0;">
+          <span>🌅 迎宾签到</span><span style="color:#c62828;">10:30</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px dashed #f8bbd0;">
+          <span>💒 结婚典礼</span><span style="color:#c62828;">11:18</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px dashed #f8bbd0;">
+          <span>🥂 婚宴开席</span><span style="color:#c62828;">12:00</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding:8px 0;">
+          <span>🎉 敬酒环节</span><span style="color:#c62828;">13:00</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 尾页 -->
+<div class="page end-page">
+  <div class="animate-on-scroll">
+    <div class="end-heart">❤️</div>
+    <div class="end-text">期待您的到来</div>
+    <div class="end-sub">THANK YOU</div>
+    <div style="margin-top:30px; font-size:14px; color:#880e4f; line-height:2;">
+      张明 & 李雪<br>
+      恭候您的光临
+    </div>
+  </div>
+</div>
+
+<script>
+  // ===== 花瓣动画 =====
+  function createPetal() {
+    const container = document.getElementById('petals');
+    const petal = document.createElement('div');
+    petal.className = 'petal';
+    petal.style.left = Math.random() * 100 + '%';
+    petal.style.animationDuration = (Math.random() * 4 + 5) + 's';
+    petal.style.animationDelay = Math.random() * 2 + 's';
+    petal.style.width = (Math.random() * 12 + 10) + 'px';
+    petal.style.height = petal.style.width;
+    petal.style.opacity = Math.random() * 0.4 + 0.3;
+    container.appendChild(petal);
+    setTimeout(() => petal.remove(), 10000);
+  }
+  setInterval(createPetal, 400);
+
+  // ===== 倒计时 =====
+  // ⚠️ 修改这里的日期为你的婚礼时间
+  const weddingDate = new Date('2026-10-01T11:18:00+08:00');
+
+  function updateCountdown() {
+    const now = new Date();
+    const diff = weddingDate - now;
+    if (diff <= 0) {
+      document.getElementById('days').textContent = '00';
+      document.getElementById('hours').textContent = '00';
+      document.getElementById('minutes').textContent = '00';
+      document.getElementById('seconds').textContent = '00';
+      return;
+    }
+    const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const s = Math.floor((diff % (1000 * 60)) / 1000);
+    document.getElementById('days').textContent = String(d).padStart(2, '0');
+    document.getElementById('hours').textContent = String(h).padStart(2, '0');
+    document.getElementById('minutes').textContent = String(m).padStart(2, '0');
+    document.getElementById('seconds').textContent = String(s).padStart(2, '0');
+  }
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+
+  // ===== 滚动动画 =====
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.2 });
+  document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+
+  // ===== 音乐控制 =====
+  let musicPlaying = false;
+  function toggleMusic() {
+    const btn = document.getElementById('musicBtn');
+    musicPlaying = !musicPlaying;
+    btn.classList.toggle('paused', !musicPlaying);
+    // 如需添加背景音乐，取消下方注释并替换音频链接
+    // const audio = document.getElementById('bgMusic');
+    // musicPlaying ? audio.play() : audio.pause();
+  }
+</script>
+
+</body>
+</html>
